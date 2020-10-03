@@ -1,7 +1,6 @@
-const { users } = require("../sequelize/account");
+const { users } = require("../sequelize/users");
 const nodemailer = require("nodemailer");
 const index = require("../../index");
-const os = require("os");
 let mail = {};
 
 let transporter = nodemailer.createTransport({
@@ -15,7 +14,7 @@ let transporter = nodemailer.createTransport({
 mail.confirm = async (email) => {
   try {
     let uuid = await users
-      .findOne({ where: { email} })
+      .findOne({ where: { email } })
       .then((res) => res.dataValues.uuid);
     await transporter.sendMail({
       from: '"toDoList" <felldektest@gmail.com>',
@@ -29,7 +28,7 @@ mail.confirm = async (email) => {
       
       For security reasons, please confirm your email address before proceeding.
 
-      ${index.host}confirmEmail/${uuid}`,
+      ${index.host}users/confirmEmail/${uuid}`,
     });
   } catch (e) {
     console.log(e);

@@ -1,17 +1,18 @@
 const express = require("express");
-const { authorization: auth } = require("./authorization");
+const { users } = require("./users");
+const { boards } = require("./boards");
 const router = express.Router();
 
-router.post("/signUp", async (req, res) => auth.signUp(req, res));
+router.post("/users/signUp", async (req, res) => users.signUp(req, res));
+router.post("/users/signIn", async (req, res) => users.signIn(req, res));
+router.post("/users/recoveryPassword", async (req, res) =>
+  users.recoveryPassword(req, res)
+);
+router.post("/users/changePassword", async (req, res) => users.changePassword(req, res));
+router.get("/users/confirmEmail/:uuid", async (req, res) => users.confirmEmail(req, res));
 
-router.post("/signIn", async (req, res) => auth.signIn(req, res));
-
-router.post("/recoveryPassword", async (req, res) => auth.recoveryPassword(req, res));
-
-router.post("/changePassword", async (req, res) => auth.changePassword(req, res));
-
-router.get("/confirmEmail/:uuid", async (req, res) => auth.confirmEmail(req, res));
-
-router.get("/", async (req, res) => auth.test(req, res));
+router.get("/boards/getBoards", async (req, res) => boards.getBoards(req, res));
+router.post("/boards/createBoard", async (req, res) => boards.createBoard(req, res));
+router.delete("/boards/deleteBoard", async (req, res) => boards.deleteBoard(req, res));
 
 module.exports = router;
