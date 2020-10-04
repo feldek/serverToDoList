@@ -3,7 +3,7 @@ const routes = require("./routes/routes");
 const { users } = require("./routes/sequelize/users");
 const PORT = process.env.PORT || 3004;
 const host = `https://server-to-do-list.herokuapp.com/`;
-const hostToDoList = "https://todolist-i3aitifi9.vercel.app/";
+const hostToDoList = "https://todolist-jb8pbbfk6.vercel.app/";
 const app = express();
 
 

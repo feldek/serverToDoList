@@ -7,7 +7,7 @@ let users = {};
 users.signUp = async (req, res) => {
   try {
     await usersBd.create(req.body);
-    await res.status(200).json({
+    await res.status(201).json({
       error: false,
       authorization: true,
       message: "You are successfully logged in",
