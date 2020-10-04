@@ -2,7 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    return queryInterface.createTable("boards", {
+    return queryInterface.createTable("lists", {
       name: Sequelize.DataTypes.STRING,
       id: {
         type: Sequelize.DataTypes.UUID,
@@ -10,13 +10,13 @@ module.exports = {
         allowNull: false,
         primaryKey: true,
       },
-      userId: {
+      boardId: {
         type: Sequelize.DataTypes.UUID,
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
         allowNull: false,
         references: {
-          model: "users",
+          model: "boards",
           key: "id",
         },
       },
@@ -24,6 +24,6 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("boards");
+    return queryInterface.dropTable("lists");
   },
 };
