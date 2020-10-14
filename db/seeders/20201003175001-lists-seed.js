@@ -13,7 +13,12 @@ module.exports = {
       { boardId: "63d132e5-6697-4b0b-94b7-5464baf3b28c", id: "26d102de-5d68-2efa-bd59-7219dcaf6477", name: "List 8"},      
       { boardId: "04d107de-5d62-4efa-bd59-9219dcaf6477", id: "36d102de-5d64-2efa-bd59-9219dcaf6477", name: "List 9"},      
       { boardId: "05d102de-5d62-3efa-bd59-9219dcaf6477", id: "46d102de-5d66-2efa-bd59-8219dcaf6477", name: "List 10"},      
-      { boardId: "06d102de-5d62-2efa-bd59-9219dcaf6477", id: "56d102de-5d63-2efa-bd59-0219dcaf6477", name: "List 11"},      
+      { boardId: "05d102de-5d62-3efa-bd59-9219dcaf6477", id: "46d102de-6d68-1efa-bd59-8219dcaf6477", name: "List 101"},      
+      { boardId: "06d102de-5d62-2efa-bd59-9219dcaf6477", id: "51d102de-5d63-2efa-bd59-0219dcaf6477", name: "List 11"},      
+      { boardId: "04d107de-5d62-4efa-bd59-9219dcaf6477", id: "52d102de-5d63-2efa-bd59-0219dcaf6477", name: "List 12"},      
+      { boardId: "04d107de-5d62-4efa-bd59-9219dcaf6477", id: "53d102de-5d63-2efa-bd59-0219dcaf6477", name: "List 13"},      
+      { boardId: "04d107de-5d62-4efa-bd59-9219dcaf6477", id: "54d102de-5d63-2efa-bd59-0219dcaf6477", name: "List 14"},      
+      
     ]);
   },  
   down: async (queryInterface, Sequelize) => {

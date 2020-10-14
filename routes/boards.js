@@ -1,58 +1,64 @@
-const { boards: boardsBd } = require("./sequelize/boards");
-const { users } = require("./sequelize/users");
+const db = require("../db/models");
 
 let boards = {};
 
 boards.getBoards = async (req, res) => {
   try {
-    users
-      .findAll({
-        where: { email: req.query.email },
-        include: {
-          model: boardsBd,
-          attributes: [],
-        },
-        attributes: ["boards.name", "boards.id"],
-        raw: true,
-      })
-      .then((result) => {
-        console.log("boards.getBoards:", result), res.status(201).json(result);
-      });
+    console.log("boards.getBoards, req.user.id:", req.user.id);
+    let currentBoards = await db.boards.findAll({
+      include: { model: db.users, where: { id: req.user.id }, attributes: [] },
+      attributes: ["name", "id"],
+      raw: true,
+    });
+    console.log("boards.getBoards:", currentBoards);
+    res.status(201).json(currentBoards);
   } catch (e) {
-    console.log("getAll", e);
+    console.log("boards.getBoards", e);
     res.sendStatus(500);
   }
 };
 
 boards.createBoard = async (req, res) => {
   try {
-    await users
-      .findOne({
-        where: { email: req.body.email },
-        attributes: ["id"],
-        raw: true,
-      })
-      .then((result) => {
-        boardsBd
-          .create({
-            userId: result.id,
-            name: req.body.name,
-          })
-          .then((data) => {
-            console.log("boards.createBoard:", data);
-            res.status(201).json({ createdBoard: true, id: data.dataValues.id });
-          });
-      });
+    let newBoard = await db.boards.create({
+      userId: req.user.id,
+      name: req.body.name,
+    });
+    console.log("boards.createBoard:", data);
+    res.status(201).json({ createdBoard: true, id: data.dataValues.id });
   } catch (e) {
     console.log("createBoard: email not found", e);
     res.sendStatus(500);
   }
 };
+// boards.createBoard = async (req, res) => {
+//   try {
+//     db.users
+//       .findOne({
+//         where: { id: req.user.id },
+//         attributes: ["id"],
+//         raw: true,
+//       })
+//       .then((result) => {
+//         db.boards
+//           .create({
+//             userId: result.id,
+//             name: req.body.name,
+//           })
+//           .then((data) => {
+//             console.log("boards.createBoard:", data);
+//             res.status(201).json({ createdBoard: true, id: data.dataValues.id });
+//           });
+//       });
+//   } catch (e) {
+//     console.log("createBoard: email not found", e);
+//     res.sendStatus(500);
+//   }
+// };
 
 boards.deleteBoard = async (req, res) => {
   try {
-    await boardsBd.destroy({ where: { id: req.body.id }, raw: true }).then((result) => {
-      console.log(result);
+    await db.boards.destroy({ where: { id: req.body.id }, raw: true }).then((result) => {      
       res.status(201).json({ deletedBoard: true });
     });
   } catch (e) {
