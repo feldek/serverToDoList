@@ -1,17 +1,17 @@
 const { mail } = require("./mail/mail");
 const index = require("../index");
-const { users: usersBd } = require("./sequelize/users");
-
+const db = require("../db/models");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+var randtoken = require("rand-token");
+const { generateTokens } = require("./auth/token");
+dotenv.config();
 let users = {};
 
 users.signUp = async (req, res) => {
   try {
-    await usersBd.create(req.body);
-    await res.status(201).json({
-      error: false,
-      authorization: true,
-      message: "You are successfully logged in",
-    });
+    await db.users.create({ email: req.body.email, password: req.body.password });
+    await users.signIn(req, res);
     await mail.confirm(req.body.email, res);
   } catch (e) {
     console.log("func signUp", e);
@@ -34,7 +34,7 @@ users.signUp = async (req, res) => {
 
 users.confirmEmail = async (req, res) => {
   try {
-    await usersBd.update({ confirm: true }, { where: { uuid: req.params.uuid } });
+    await db.users.update({ confirm: true }, { where: { uuid: req.params.uuid } });
     res.redirect(index.hostToDoList);
   } catch (e) {
     console.log("func confirmEmail", e);
@@ -44,7 +44,7 @@ users.confirmEmail = async (req, res) => {
 
 users.recoveryPassword = async (req, res) => {
   try {
-    let results = await usersBd.findOne({ where: { email: req.body.email } });
+    let results = await db.users.findOne({ where: { email: req.body.email } });
     if (!results) {
       res.json({ error: true, message: "This email not found" });
       console.log("This email not found");
@@ -72,23 +72,34 @@ users.recoveryPassword = async (req, res) => {
   }
 };
 
+let b = { req1: { body: { email: "999@gmail.com", password: "123" } } };
+
 users.signIn = async (req, res) => {
   try {
-    let authentication = await usersBd.findOne({
+    let user = await db.users.findOne({
       where: { email: req.body.email, password: req.body.password },
+      attributes: ["id"],
       raw: true,
     });
-    console.log("authorization.signIn:", authentication);
 
-    if (!authentication) {
+    console.log("users.signIn user:", user);
+
+    if (!user) {
       res.status(401).json({
         message: "Incorrect username or password",
         error: true,
+        token: {},
+        refreshToken: {},
       });
     } else {
-      res
-        .status(200)
-        .json({ error: false, authorization: true, message: "you successful login" });
+      let tokens = generateTokens({ id: user.id });
+      console.log("users.signIn tokens:", tokens);
+      res.status(200).json({
+        error: false,
+        authorization: true,
+        message: "You are successfully logged in",
+        ...tokens,
+      });
     }
   } catch (e) {
     console.log("func signIn", e);
@@ -98,15 +109,15 @@ users.signIn = async (req, res) => {
 
 users.changePassword = async (req, res) => {
   try {
-    let authentication = await usersBd.findOne({
-      where: { email: req.body.email, password: req.body.oldPassword },
+    let authentication = await db.users.findOne({
+      where: { id: req.user.id, password: req.body.oldPassword },
     });
     if (authentication) {
-      let changePassword = await usersBd.update(
+      let changePassword = await db.users.update(
         { password: req.body.newPassword },
         {
           where: {
-            email: req.body.email,
+            id: req.user.id,
           },
         }
       );
@@ -133,10 +144,14 @@ users.changePassword = async (req, res) => {
   }
 };
 
-users.test = async (req, res) => {
-  res.json({
-    test: "Message for test app",
-  });
-};
+// users.test = async (req, res) => {
+//   res.json({
+//     test: "Message for test app",
+// });
+// };
+
+// console.log(refreshToken)
+
+// console.log(token)
 
 module.exports.users = users;

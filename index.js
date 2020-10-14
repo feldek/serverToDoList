@@ -1,5 +1,8 @@
 const express = require("express");
+// const users = require("./db/models/users");
+// const db = require("./db/models");
 const routes = require("./routes/routes");
+const tasks = require("./routes/tasks");
 const PORT = process.env.PORT || 3004;
 const host = `https://server-to-do-list.herokuapp.com/`;
 const hostToDoList = "https://todolist-jb8pbbfk6.vercel.app/";
@@ -14,11 +17,10 @@ app.use(express.json());
 app.use((req, res, next) => {
   res.append("Access-Control-Allow-Origin", ["*"]);
   res.append("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
-  res.append("Access-Control-Allow-Headers", "Content-Type");
+  res.append("Access-Control-Allow-Headers", "Content-Type, Authorization,X-Custom-Header");
+  // res.append("Access-Control-Allow-Headers", "Authorization,X-Custom-Header");
   next();
 });
-
-
 
 app.use("/", routes);
 

@@ -1,4 +1,5 @@
-const { account } = require("../db/account");
+const db = require("../../db/models");
+const usersDb = require("../../db/models/users")(db.sequelize, db.Sequelize.DataTypes);
 const nodemailer = require("nodemailer");
 const index = require("../../index");
 const os = require("os");
@@ -14,7 +15,9 @@ let transporter = nodemailer.createTransport({
 
 mail.confirm = async (email) => {
   try {
-    let uuid = await account.getUuid(email);
+    let uuid = await usersDb
+      .findOne({ where: { email } })
+      .then((res) => res.dataValues.uuid);
     await transporter.sendMail({
       from: '"toDoList" <felldektest@gmail.com>',
       to: `${email}`,
