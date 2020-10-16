@@ -1,23 +1,18 @@
 const db = require("../../db/models");
-const usersDb = require("../../db/models/users")(db.sequelize, db.Sequelize.DataTypes);
 const nodemailer = require("nodemailer");
-const index = require("../../index");
-const os = require("os");
 let mail = {};
 
 let transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "felldektest@gmail.com",
-    pass: "test#456123",
+    user: process.env.FELLDEK_EMAIL,
+    pass: process.env.FELLDEK_EMAIL_PASSWORD,
   },
 });
 
-mail.confirm = async (email) => {
+mail.confirmEmail = async (email) => {
   try {
-    let uuid = await usersDb
-      .findOne({ where: { email } })
-      .then((res) => res.dataValues.uuid);
+    let id = await db.users.findOne({ where: { email }, attributes: ["id"] });
     await transporter.sendMail({
       from: '"toDoList" <felldektest@gmail.com>',
       to: `${email}`,
@@ -30,7 +25,7 @@ mail.confirm = async (email) => {
       
       For security reasons, please confirm your email address before proceeding.
 
-      ${index.host}confirmEmail/${uuid[0].uuid}`,
+      ${process.env.FELLDEK_HOST}users/confirmEmail/${id}`,
     });
   } catch (e) {
     console.log(e);
@@ -38,16 +33,16 @@ mail.confirm = async (email) => {
   }
 };
 
-mail.recoveryPassword = async (item) => {
+mail.recoveryPassword = async ({ email, password }) => {
   try {
     await transporter.sendMail({
       from: '"toDoList" <felldektest@gmail.com>',
-      to: `${item.email}`,
+      to: `${email}`,
       subject: "Recovery password",
       text: `
       A password recovery email has been sent for an account registered 
       to a current email address.
-      You password:  ${item.password}`,
+      You password:  ${password}`,
     });
   } catch (e) {
     console.log(e);

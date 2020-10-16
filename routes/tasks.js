@@ -1,78 +1,47 @@
 const db = require("../db/models");
-const { boards } = require("./boards");
-
 let tasks = {};
 
 tasks.getAllTasks = async (req, res) => {
   try {
-    await db.users
-      .findAll({
-        where: { id: req.user.id },
+    let allTasks = await db.tasks.findAll({
+      include: {
+        attributes: [],
+        model: db.lists,
         include: {
-          model: db.boards,
           attributes: [],
+          model: db.boards,
           include: {
-            model: db.lists,
             attributes: [],
-            include: {
-              model: db.tasks,
-              attributes: [],
-            },
+            model: db.users,
+            where: { id: req.user.id },
           },
         },
-        attributes: [
-          "boards.lists.tasks.name",
-          "boards.lists.tasks.id",
-          "boards.lists.tasks.order",
-          "boards.lists.tasks.listId",
-        ],
-        raw: true,
-      })
-      .then((result) => {
-        console.log("boards.getBoards:", result);
-        res.status(200).json(result);
-      });
+      },
+      attributes: ["name", "id", "order", "description", "listId"],
+      raw: true,
+    });
+    console.log("boards.getBoards:", allTasks);
+    res.status(200).json(allTasks);
   } catch (e) {
     console.log("getAll", e);
     res.sendStatus(500);
   }
 };
 
-let test = {
-  req: {
-    query: {
-      boardId: "04d107de-5d62-4efa-bd59-9219dcaf6477",
-      userId: "56e3c7f1-5930-4384-92f9-4f64c2409aec",
-      listId: "54d102de-5d63-2efa-bd59-0219dcaf6477",
-    },
-  },
-};
-
 tasks.getCurrentTasks = async (req, res) => {
   try {
-    await db.boards
-      .findAll({
-        where: { id: req.query.boardId },
-        include: {
-          model: db.lists,
-          attributes: [],
-          include: {
-            model: db.tasks,
-            attributes: [],
-          },
-        },
-        attributes: [
-          "lists.tasks.name",
-          "lists.tasks.id",
-          "lists.tasks.order",
-          "lists.tasks.listId",
-        ],
-        raw: true,
-      })
-      .then((result) => {
-        console.log("tasks.getCurrentTasks:", result);
-        res.status(200).json(result);
-      });
+    let currentTasks = await db.tasks.findAll({
+      include: {
+        model: db.lists,
+        where: { boardId: req.query.boardId },
+        attributes: [],
+      },
+      attributes: ["name", "id", "order", "listId", "description"],
+      raw: true,
+    });
+
+    // console.log("tasks.getCurrentTasks:", currentTasks);
+    res.status(200).json(currentTasks);
   } catch (e) {
     console.log("tasks.getCurrentTasks", e);
     res.sendStatus(500);
@@ -81,16 +50,12 @@ tasks.getCurrentTasks = async (req, res) => {
 
 tasks.createTask = async (req, res) => {
   try {
-    await db.tasks
-      .create({
-        name: req.body.name,
-        listId: req.body.listId,
-        order: req.body.order,
-      })
-      .then((data) => {
-        console.log("tasks.createTask:", data);
-        res.status(201).json({ createdTask: true, id: data.dataValues.id });
-      });
+    let newTask = await db.tasks.create({
+      name: req.body.name,
+      listId: req.body.listId,
+      order: req.body.order,
+    });
+    res.status(201).json({ createdTask: true, id: newTask.dataValues.id });
   } catch (e) {
     console.log("tasks.createTask:", e);
     res.sendStatus(500);
@@ -99,15 +64,12 @@ tasks.createTask = async (req, res) => {
 
 tasks.updateTask = async (req, res) => {
   try {
-    await db.tasks
-      .update(
-        { order: req.body.order, listId: req.body.listId },
-        { where: { id: req.body.id }, raw: true }
-      )
-      .then((result) => {
-        console.log("tasks.updateTask:", result);
-        res.status(200).json({ updatedTask: true });
-      });
+    let updateTask = await db.tasks.update(
+      { order: req.body.order, listId: req.body.listId },
+      { where: { id: req.body.id }, raw: true }
+    );
+    console.log("tasks.updateTask:", updateTask);
+    res.status(200).json({ updatedTask: true });
   } catch (e) {
     console.log("tasks.updateTask:", e);
     res.status(500).json({
@@ -118,10 +80,8 @@ tasks.updateTask = async (req, res) => {
 };
 tasks.deleteTask = async (req, res) => {
   try {
-    await db.tasks.destroy({ where: { id: req.body.id }, raw: true }).then((result) => {
-      console.log("tasks.deleteTask:", result);
-      res.status(200).json({ deletedTask: true });
-    });
+    await db.tasks.destroy({ where: { id: req.body.id }, raw: true });
+    res.status(200).json({ deletedTask: true });
   } catch (e) {
     console.log("tasks.deleteTask:", e);
     res.status(500).json({
@@ -131,4 +91,4 @@ tasks.deleteTask = async (req, res) => {
   }
 };
 
-module.exports.tasks = tasks;
+module.exports = tasks;
