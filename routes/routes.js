@@ -1,35 +1,32 @@
 const express = require("express");
-const { users } = require("./users");
-const { boards } = require("./boards");
-const { lists } = require("./lists");
-const { tasks } = require("./tasks");
+const auth = require("./auth");
+const boards = require("./boards");
+const lists = require("./lists");
+const tasks = require("./tasks");
 const router = express.Router();
-const authToken = require("../authenticate");
-const { authenticateToken } = require("./auth/token");
+const authMiddleware = require("./auth/authMiddleware");
+const { refreshToken } = require("./auth/token");
 
+router.post("/auth/signUp", async (req, res) => auth.signUp(req, res));
+router.post("/auth/signIn", async (req, res) => auth.signIn(req, res));
+router.post("/auth/recoveryPassword", async (req, res) => auth.recoveryPassword(req, res));
+router.post("/auth/changePassword", authMiddleware, async (req, res) => auth.changePassword(req, res));
+router.post("/auth/refreshToken", async (req, res) => refreshToken(req, res));
+router.get("/auth/confirmEmail/:id", async (req, res) => auth.confirmEmail(req, res));
 
-router.post("/users/signUp", async (req, res) => users.signUp(req, res));
-router.post("/users/signIn", async (req, res) => users.signIn(req, res));
-router.post("/users/recoveryPassword", async (req, res) => users.recoveryPassword(req, res));
-router.post("/users/changePassword", authToken, async (req, res) => users.changePassword(req, res));
-router.get("/users/confirmEmail/:uuid", async (req, res) => users.confirmEmail(req, res));
+router.get("/boards/getBoards", authMiddleware, async (req, res) =>  boards.getBoards(req, res));
+router.post("/boards/createBoard", authMiddleware, async (req, res) => boards.createBoard(req, res));
+router.delete("/boards/deleteBoard", authMiddleware, async (req, res) => boards.deleteBoard(req, res));
 
-router.post("/auth/refreshToken",  async (req, res) => authenticateToken(req, res));
-// router.post("/auth/refreshToken", authToken);
+router.get("/lists/getAllLists", authMiddleware, async (req, res) => lists.getAllLists(req, res));
+router.get("/lists/getCurrentLists", authMiddleware, async (req, res) => lists.getCurrentLists(req, res));
+router.post("/lists/createList", authMiddleware, async (req, res) => lists.createList(req, res));
+router.delete("/lists/deleteList", authMiddleware, async (req, res) => lists.deleteList(req, res));
 
-router.get("/boards/getBoards", authToken, async (req, res) => boards.getBoards(req, res));
-router.post("/boards/createBoard", authToken, async (req, res) => boards.createBoard(req, res));
-router.delete("/boards/deleteBoard", authToken, async (req, res) => boards.deleteBoard(req, res));
-
-router.get("/lists/getAllLists", authToken, async (req, res) => lists.getAllLists(req, res));
-router.get("/lists/getCurrentLists", authToken, async (req, res) => lists.getCurrentLists(req, res));
-router.post("/lists/createList", authToken, async (req, res) => lists.createList(req, res));
-router.delete("/lists/deleteList", authToken, async (req, res) => lists.deleteList(req, res));
-
-router.get("/tasks/getAllTasks", authToken, async (req, res) => tasks.getAllTasks(req, res));
-router.get("/tasks/getCurrentTasks", authToken, async (req, res) => tasks.getCurrentTasks(req, res));
-router.post("/tasks/createTask", authToken, async (req, res) => tasks.createTask(req, res));
-router.put("/tasks/updateTask", authToken, async (req, res) => tasks.updateTask(req, res));
-router.delete("/tasks/deleteTask", authToken, async (req, res) => tasks.deleteTask(req, res));
+router.get("/tasks/getAllTasks", authMiddleware, async (req, res) => tasks.getAllTasks(req, res));
+router.get("/tasks/getCurrentTasks", authMiddleware, async (req, res) => tasks.getCurrentTasks(req, res));
+router.post("/tasks/createTask", authMiddleware, async (req, res) => tasks.createTask(req, res));
+router.put("/tasks/updateTask", authMiddleware, async (req, res) => tasks.updateTask(req, res));
+router.delete("/tasks/deleteTask", authMiddleware, async (req, res) => tasks.deleteTask(req, res));
 
 module.exports = router;

@@ -1,18 +1,15 @@
 const { mail } = require("./mail/mail");
-const index = require("../index");
 const db = require("../db/models");
-const jwt = require("jsonwebtoken");
-const dotenv = require("dotenv");
-var randtoken = require("rand-token");
 const { generateTokens } = require("./auth/token");
-dotenv.config();
-let users = {};
+const hostToDoList = process.env.FELLDEK_HOST_TO_DO_LIST;
 
-users.signUp = async (req, res) => {
+let auth = {};
+
+auth.signUp = async (req, res) => {
   try {
     await db.users.create({ email: req.body.email, password: req.body.password });
-    await users.signIn(req, res);
-    await mail.confirm(req.body.email, res);
+    await auth.signIn(req, res);
+    await mail.confirmEmail(req.body.email, res);
   } catch (e) {
     console.log("func signUp", e);
     if (e.original.code === "23505") {
@@ -32,31 +29,31 @@ users.signUp = async (req, res) => {
   }
 };
 
-users.confirmEmail = async (req, res) => {
+auth.confirmEmail = async (req, res) => {
   try {
-    await db.users.update({ confirm: true }, { where: { uuid: req.params.uuid } });
-    res.redirect(index.hostToDoList);
+    await db.users.update({ confirm: true }, { where: { id: req.params.id } });
+    res.redirect(hostToDoList);
   } catch (e) {
     console.log("func confirmEmail", e);
     res.sendStatus(500);
   }
 };
 
-users.recoveryPassword = async (req, res) => {
+auth.recoveryPassword = async (req, res) => {
   try {
-    let results = await db.users.findOne({ where: { email: req.body.email } });
-    if (!results) {
+    let recoveryPassword = await db.users.findOne({ where: { email: req.body.email } });
+    if (!recoveryPassword) {
       res.json({ error: true, message: "This email not found" });
       console.log("This email not found");
     } else {
-      if (results.dataValues.confirm === false) {
+      if (recoveryPassword.dataValues.confirm === false) {
         res.json({
           error: true,
           message: "Please confirm your email address before proceeding",
         });
         console.log("Please confirm your email address before proceeding");
       } else {
-        let mailForgotPassword = await mail.recoveryPassword(results.dataValues);
+        let mailForgotPassword = await mail.recoveryPassword(recoveryPassword.dataValues);
         res.status(200).json({
           message: "A message with a password has been sent to you email",
           error: false,
@@ -72,9 +69,7 @@ users.recoveryPassword = async (req, res) => {
   }
 };
 
-let b = { req1: { body: { email: "999@gmail.com", password: "123" } } };
-
-users.signIn = async (req, res) => {
+auth.signIn = async (req, res) => {
   try {
     let user = await db.users.findOne({
       where: { email: req.body.email, password: req.body.password },
@@ -107,7 +102,7 @@ users.signIn = async (req, res) => {
   }
 };
 
-users.changePassword = async (req, res) => {
+auth.changePassword = async (req, res) => {
   try {
     let authentication = await db.users.findOne({
       where: { id: req.user.id, password: req.body.oldPassword },
@@ -144,14 +139,4 @@ users.changePassword = async (req, res) => {
   }
 };
 
-// users.test = async (req, res) => {
-//   res.json({
-//     test: "Message for test app",
-// });
-// };
-
-// console.log(refreshToken)
-
-// console.log(token)
-
-module.exports.users = users;
+module.exports = auth;
