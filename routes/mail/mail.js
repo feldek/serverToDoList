@@ -10,9 +10,9 @@ let transporter = nodemailer.createTransport({
   },
 });
 
-mail.confirmEmail = async (email) => {
+mail.confirmEmail = async ({ id, email }) => {
   try {
-    let id = await db.users.findOne({ where: { email }, attributes: ["id"] });
+    console.log("CONFIRM EMAIL id:", id);
     await transporter.sendMail({
       from: '"toDoList" <felldektest@gmail.com>',
       to: `${email}`,
@@ -25,7 +25,7 @@ mail.confirmEmail = async (email) => {
       
       For security reasons, please confirm your email address before proceeding.
 
-      ${process.env.FELLDEK_HOST}users/confirmEmail/${id}`,
+      ${process.env.FELLDEK_HOST}auth/confirmEmail/${id}`,
     });
   } catch (e) {
     console.log(e);

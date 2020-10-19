@@ -4,12 +4,16 @@ const { generateTokens } = require("./auth/token");
 const hostToDoList = process.env.FELLDEK_HOST_TO_DO_LIST;
 
 let auth = {};
+let a = { body: { email: "123test", password: "123" } };
 
 auth.signUp = async (req, res) => {
   try {
-    await db.users.create({ email: req.body.email, password: req.body.password });
+    const user = await db.users.create({
+      email: req.body.email,
+      password: req.body.password,
+    });
     await auth.signIn(req, res);
-    await mail.confirmEmail(req.body.email, res);
+    await mail.confirmEmail({ id: user.dataValues.id, email: req.body.email });
   } catch (e) {
     console.log("func signUp", e);
     if (e.original.code === "23505") {
@@ -128,7 +132,7 @@ auth.changePassword = async (req, res) => {
         });
       }
     } else {
-      res.status(401).json({
+      res.status(500).json({
         error: true,
         message: "Wrong password",
       });
