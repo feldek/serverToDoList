@@ -42,10 +42,16 @@ lists.getCurrentLists = async (req, res) => {
 
 lists.createList = async (req, res) => {
   try {
-    let newList = await db.lists.create({
-      boardId: req.body.boardId,
-      name: req.body.name,
-    });
+    let newList = req.body.id
+      ? await db.lists.create({
+          boardId: req.body.boardId,
+          name: req.body.name,
+          id: req.body.id,
+        })
+      : await db.lists.create({
+          boardId: req.body.boardId,
+          name: req.body.name,
+        });
     console.log("lists.createList:", newList);
     res.status(201).json({ createdList: true, id: newList.dataValues.id });
   } catch (e) {
