@@ -9,7 +9,7 @@ lists.getAllLists = async (req, res) => {
         model: db.boards,
         include: {
           model: db.users,
-          where: { id: test.req.query.userId },
+          where: { id: req.user.id },
           attributes: [],
         },
         attributes: [],

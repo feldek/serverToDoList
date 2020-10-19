@@ -16,17 +16,35 @@
     }
   },
   "test": {
-    "username": "root",
-    "password": null,
-    "database": "database_test",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "username": "eglkvngmdupval",
+    "password": "a23764d8447a33c5234f186417acc03a7c2a4ed5448b818242ad87622826d91f",
+    "database": "d1neoolbks8vo2",
+    "host": "ec2-3-248-4-172.eu-west-1.compute.amazonaws.com",
+    "dialect": "postgres",
+    "port": "5432",
+    "dialectOptions": {
+      "ssl": {
+        "rejectUnauthorized": false
+      },
+      "define": {
+        "freezeTableName": true
+      }      
+    }
   },
   "production": {
-    "username": "root",
-    "password": null,
-    "database": "database_production",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "username": "eglkvngmdupval",
+    "password": "a23764d8447a33c5234f186417acc03a7c2a4ed5448b818242ad87622826d91f",
+    "database": "d1neoolbks8vo2",
+    "host": "ec2-3-248-4-172.eu-west-1.compute.amazonaws.com",
+    "dialect": "postgres",
+    "port": "5432",
+    "dialectOptions": {
+      "ssl": {
+        "rejectUnauthorized": false
+      },
+      "define": {
+        "freezeTableName": true
+      }      
+    }
   }
 }
