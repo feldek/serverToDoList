@@ -40,9 +40,8 @@ boards.createBoard = async (req, res) => {
 
 boards.deleteBoard = async (req, res) => {
   try {
-    await db.boards.destroy({ where: { id: req.body.id }, raw: true }).then((result) => {
-      res.status(201).json({ deletedBoard: true });
-    });
+    await db.boards.destroy({ where: { id: req.body.id }, raw: true });
+    res.status(201).json({ deletedBoard: true });
   } catch (e) {
     console.log("destroyBoard: id not found", e);
     res.status(500).json({
