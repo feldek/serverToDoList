@@ -29,4 +29,6 @@ router.post("/tasks/createTask", authMiddleware, async (req, res) => tasks.creat
 router.put("/tasks/updateTask", authMiddleware, async (req, res) => tasks.updateTask(req, res));
 router.delete("/tasks/deleteTask", authMiddleware, async (req, res) => tasks.deleteTask(req, res));
 
+router.put("/tasks/updateDescription", authMiddleware, async (req, res) => tasks.updateDescription(req, res));
 module.exports = router;
+

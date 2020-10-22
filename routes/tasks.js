@@ -91,4 +91,21 @@ tasks.deleteTask = async (req, res) => {
   }
 };
 
+tasks.updateDescription = async (req, res) => {
+  try {
+    let updateTask = await db.tasks.update(
+      { description: req.body.description },
+      { where: { id: req.body.id }, raw: true }
+    );
+    console.log("tasks.updateTask:", updateTask);
+    res.status(200).json({ updatedDescription: true });
+  } catch (e) {
+    console.log("tasks.updateTask:", e);
+    res.status(500).json({
+      error: true,
+      message: "Id this task not found",
+    });
+  }
+};
+
 module.exports = tasks;
