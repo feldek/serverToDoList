@@ -5,31 +5,29 @@ const lists = require("./lists");
 const tasks = require("./tasks");
 const router = express.Router();
 const authMiddleware = require("./auth/authMiddleware");
-const { refreshToken } = require("./auth/token");
+const { refreshTokens } = require("./auth/token");
 
-router.post("/auth/signUp", async (req, res) => auth.signUp(req, res));
-router.post("/auth/signIn", async (req, res) => auth.signIn(req, res));
-router.post("/auth/recoveryPassword", async (req, res) => auth.recoveryPassword(req, res));
-router.post("/auth/changePassword", authMiddleware, async (req, res) => auth.changePassword(req, res));
-router.post("/auth/refreshToken", async (req, res) => refreshToken(req, res));
-router.get("/auth/confirmEmail/:id", async (req, res) => auth.confirmEmail(req, res));
+router.post("/auth/signUp", auth.signUp);
+router.post("/auth/signIn", auth.signIn);
+router.post("/auth/recoveryPassword", auth.recoveryPassword);
+router.post("/auth/changePassword", authMiddleware, auth.changePassword);
+router.post("/auth/refreshTokens", refreshTokens);
+router.get("/auth/confirmEmail/:id", auth.confirmEmail);
 
-router.get("/boards/getBoards", authMiddleware, async (req, res) =>  boards.getBoards(req, res));
-router.post("/boards/createBoard", authMiddleware, async (req, res) => boards.createBoard(req, res));
-router.delete("/boards/deleteBoard", authMiddleware, async (req, res) => boards.deleteBoard(req, res));
+router.get("/boards", authMiddleware, boards.getBoards);
+router.post("/board", authMiddleware, boards.createBoard);
+router.delete("/board", authMiddleware, boards.deleteBoard);
 
-router.get("/lists/getAllLists", authMiddleware, async (req, res) => lists.getAllLists(req, res));
-router.get("/lists/getCurrentLists", authMiddleware, async (req, res) => lists.getCurrentLists(req, res));
-router.post("/lists/createList", authMiddleware, async (req, res) => lists.createList(req, res));
-router.delete("/lists/deleteList", authMiddleware, async (req, res) => lists.deleteList(req, res));
+router.get("/lists/getAllLists", authMiddleware, lists.getAllLists);
+router.get("/lists", authMiddleware, lists.getCurrentLists);
+router.post("/list", authMiddleware, lists.createList);
+router.delete("/list", authMiddleware, lists.deleteList);
 
-router.get("/tasks/getAllTasks", authMiddleware, async (req, res) => tasks.getAllTasks(req, res));
-router.get("/tasks/getCurrentTasks", authMiddleware, async (req, res) => tasks.getCurrentTasks(req, res));
-router.post("/tasks/createTask", authMiddleware, async (req, res) => tasks.createTask(req, res));
-router.put("/tasks/updateTask", authMiddleware, async (req, res) => tasks.updateTask(req, res));
-router.delete("/tasks/deleteTask", authMiddleware, async (req, res) => tasks.deleteTask(req, res));
+router.get("/tasks/getAllTasks", authMiddleware, tasks.getAllTasks);
+router.get("/tasks", authMiddleware, tasks.getCurrentTasks);
+router.post("/task", authMiddleware, tasks.createTask);
+router.patch("/task", authMiddleware, tasks.updateTask);
+router.delete("/task", authMiddleware, tasks.deleteTask);
 
-router.put("/tasks/updateDescription", authMiddleware, async (req, res) => tasks.updateDescription(req, res));
+router.patch("/task/description", authMiddleware, tasks.updateDescription);
 module.exports = router;
-
-

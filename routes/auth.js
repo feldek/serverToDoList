@@ -1,34 +1,39 @@
 const { mail } = require("./mail/mail");
 const db = require("../db/models");
+const bcrypt = require("bcryptjs");
 const { generateTokens } = require("./auth/token");
 const hostToDoList = process.env.FELLDEK_HOST_TO_DO_LIST;
-
 let auth = {};
-let a = { body: { email: "123test", password: "123" } };
+
+const encrypt = (target) => {
+  return new Promise((resolve, reject) => {
+    bcrypt.hash(target, 8, (err, hash) => {
+      if (err) return reject(err);
+      return resolve(hash);
+    });
+  });
+};
 
 auth.signUp = async (req, res) => {
   try {
+    const encryptedPassword = await encrypt(req.body.password);
     const user = await db.users.create({
       email: req.body.email,
-      password: req.body.password,
+      password: encryptedPassword,
     });
+
+    console.log("user:", user);
     await auth.signIn(req, res);
-    await mail.confirmEmail({ id: user.dataValues.id, email: req.body.email });
+    await mail.confirmEmail({ id: user.id, email: user.email });
   } catch (e) {
     console.log("func signUp", e);
     if (e.original.code === "23505") {
-      res.status(500).json({
-        error: true,
-        authorization: false,
-        description: "This E-mail already registered",
+      res.status(400).json({
+        message: "This E-mail already registered",
       });
       console.log("This E-mail already registered");
     } else {
-      res.status(500).json({
-        error: true,
-        authorization: false,
-        description: e.errors[0].message,
-      });
+      res.sendStatus(500);
     }
   }
 };
@@ -47,12 +52,11 @@ auth.recoveryPassword = async (req, res) => {
   try {
     let recoveryPassword = await db.users.findOne({ where: { email: req.body.email } });
     if (!recoveryPassword) {
-      res.json({ error: true, message: "This email not found" });
+      res.status(400).json({ message: "This email not found" });
       console.log("This email not found");
     } else {
       if (recoveryPassword.dataValues.confirm === false) {
-        res.json({
-          error: true,
+        res.status(400).json({
           message: "Please confirm your email address before proceeding",
         });
         console.log("Please confirm your email address before proceeding");
@@ -60,42 +64,34 @@ auth.recoveryPassword = async (req, res) => {
         let mailForgotPassword = await mail.recoveryPassword(recoveryPassword.dataValues);
         res.status(200).json({
           message: "A message with a password has been sent to you email",
-          error: false,
         });
-        console.log(
-          `A message with a password has been sent to you email, result: ${mailForgotPassword}`
-        );
+        console.log(`A message with a password has been sent to you email`);
       }
     }
   } catch (e) {
+    console.log(e);
     res.sendStatus(500);
-    console.log("func recoveryPassword:", e);
   }
 };
 
 auth.signIn = async (req, res) => {
   try {
     let user = await db.users.findOne({
-      where: { email: req.body.email, password: req.body.password },
-      attributes: ["id"],
+      where: { email: req.body.email },
+      attributes: ["id", "email", "password"],
       raw: true,
     });
+    let verification = await bcrypt.compare(req.body.password, user.password);
+    console.log("verification", verification);
 
-    console.log("users.signIn user:", user);
-
-    if (!user) {
+    if (!verification) {
       res.status(401).json({
         message: "Incorrect username or password",
-        error: true,
-        token: {},
-        refreshToken: {},
       });
     } else {
       let tokens = generateTokens({ id: user.id });
       console.log("users.signIn tokens:", tokens);
       res.status(200).json({
-        error: false,
-        authorization: true,
         message: "You are successfully logged in",
         ...tokens,
       });
@@ -108,32 +104,23 @@ auth.signIn = async (req, res) => {
 
 auth.changePassword = async (req, res) => {
   try {
-    let authentication = await db.users.findOne({
-      where: { id: req.user.id, password: req.body.oldPassword },
+    let user = await db.users.findOne({
+      where: { id: req.user.id },
+      attributes: ["password"],
+      raw: true,
     });
-    if (authentication) {
-      let changePassword = await db.users.update(
-        { password: req.body.newPassword },
-        {
-          where: {
-            id: req.user.id,
-          },
-        }
+    let verification = await bcrypt.compare(req.body.oldPassword, user.password);
+    if (verification) {
+      const encryptedPassword = await encrypt(req.body.newPassword);
+      await db.users.update(
+        { password: encryptedPassword },
+        { where: { id: req.user.id } }
       );
-      if (changePassword) {
-        res.status(200).json({
-          error: false,
-          message: "Password changed successfully",
-        });
-      } else {
-        res.status(500).json({
-          error: true,
-          message: "Error, Try again",
-        });
-      }
+      res.status(200).json({
+        message: "Password changed successfully",
+      });
     } else {
-      res.status(500).json({
-        error: true,
+      res.status(400).json({
         message: "Wrong password",
       });
     }

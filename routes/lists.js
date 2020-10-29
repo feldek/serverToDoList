@@ -7,11 +7,7 @@ lists.getAllLists = async (req, res) => {
     let allLists = await db.lists.findAll({
       include: {
         model: db.boards,
-        include: {
-          model: db.users,
-          where: { id: req.user.id },
-          attributes: [],
-        },
+        where: { userId: req.user.id },
         attributes: [],
       },
       raw: true,
@@ -20,7 +16,7 @@ lists.getAllLists = async (req, res) => {
     console.log("lists.getAllLists:", allLists);
     res.status(200).json(allLists);
   } catch (e) {
-    console.log("lists.getAllLists:", e);
+    console.log(e);
     res.sendStatus(500);
   }
 };
@@ -35,7 +31,7 @@ lists.getCurrentLists = async (req, res) => {
     console.log("lists.getCurrentLists:", currentList);
     res.status(200).json(currentList);
   } catch (e) {
-    console.log("lists.getCurrentLists:", e);
+    console.log(e);
     res.sendStatus(500);
   }
 };
@@ -53,9 +49,9 @@ lists.createList = async (req, res) => {
           name: req.body.name,
         });
     console.log("lists.createList:", newList);
-    res.status(201).json({ createdList: true, id: newList.dataValues.id });
+    res.sendStatus(201);
   } catch (e) {
-    console.log("lists.createList:", e);
+    console.log(e);
     res.sendStatus(500);
   }
 };
@@ -63,13 +59,10 @@ lists.createList = async (req, res) => {
 lists.deleteList = async (req, res) => {
   try {
     await db.lists.destroy({ where: { id: req.body.id }, raw: true });
-    res.status(200).json({ deletedList: true });
+    res.sendStatus(200);
   } catch (e) {
-    console.log("lists.deleteList:", e);
-    res.status(500).json({
-      error: true,
-      message: "Id this list not found",
-    });
+    console.log(e);
+    res.sendStatus(500);
   }
 };
 

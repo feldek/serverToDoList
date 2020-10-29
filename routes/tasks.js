@@ -10,11 +10,7 @@ tasks.getAllTasks = async (req, res) => {
         include: {
           attributes: [],
           model: db.boards,
-          include: {
-            attributes: [],
-            model: db.users,
-            where: { id: req.user.id },
-          },
+          where: { userId: req.user.id },
         },
       },
       attributes: ["name", "id", "order", "description", "listId"],
@@ -23,7 +19,7 @@ tasks.getAllTasks = async (req, res) => {
     console.log("boards.getBoards:", allTasks);
     res.status(200).json(allTasks);
   } catch (e) {
-    console.log("getAll", e);
+    console.log(e);
     res.sendStatus(500);
   }
 };
@@ -39,25 +35,24 @@ tasks.getCurrentTasks = async (req, res) => {
       attributes: ["name", "id", "order", "listId", "description"],
       raw: true,
     });
-
-    // console.log("tasks.getCurrentTasks:", currentTasks);
+    console.log("tasks.getCurrentTasks:", currentTasks);
     res.status(200).json(currentTasks);
   } catch (e) {
-    console.log("tasks.getCurrentTasks", e);
+    console.log(e);
     res.sendStatus(500);
   }
 };
 
 tasks.createTask = async (req, res) => {
   try {
-    let newTask = await db.tasks.create({
+    await db.tasks.create({
       name: req.body.name,
       listId: req.body.listId,
       order: req.body.order,
     });
-    res.status(201).json({ createdTask: true, id: newTask.dataValues.id });
+    res.sendStatus(201);
   } catch (e) {
-    console.log("tasks.createTask:", e);
+    console.log(e);
     res.sendStatus(500);
   }
 };
@@ -69,25 +64,19 @@ tasks.updateTask = async (req, res) => {
       { where: { id: req.body.id }, raw: true }
     );
     console.log("tasks.updateTask:", updateTask);
-    res.status(200).json({ updatedTask: true });
+    res.sendStatus(200);
   } catch (e) {
-    console.log("tasks.updateTask:", e);
-    res.status(500).json({
-      error: true,
-      message: "Id this task not found",
-    });
+    console.log(e);
+    res.sendStatus(500);
   }
 };
 tasks.deleteTask = async (req, res) => {
   try {
     await db.tasks.destroy({ where: { id: req.body.id }, raw: true });
-    res.status(200).json({ deletedTask: true });
+    res.sendStatus(200);
   } catch (e) {
-    console.log("tasks.deleteTask:", e);
-    res.status(500).json({
-      error: true,
-      message: "Id this task not found",
-    });
+    console.log(e);
+    res.sendStatus(500);
   }
 };
 
@@ -98,13 +87,10 @@ tasks.updateDescription = async (req, res) => {
       { where: { id: req.body.id }, raw: true }
     );
     console.log("tasks.updateTask:", updateTask);
-    res.status(200).json({ updatedDescription: true });
+    res.sendStatus(200);
   } catch (e) {
-    console.log("tasks.updateTask:", e);
-    res.status(500).json({
-      error: true,
-      message: "Id this task not found",
-    });
+    console.log(e);
+    res.sendStatus(500);
   }
 };
 

@@ -6,14 +6,14 @@ boards.getBoards = async (req, res) => {
   try {
     console.log("boards.getBoards, req.user.id:", req.user.id);
     let currentBoards = await db.boards.findAll({
-      include: { model: db.users, where: { id: req.user.id }, attributes: [] },
+      where: { userId: req.user.id },
       attributes: ["name", "id"],
       raw: true,
     });
     console.log("boards.getBoards:", currentBoards);
     res.status(201).json(currentBoards);
   } catch (e) {
-    console.log("boards.getBoards", e);
+    console.log(e);
     res.sendStatus(500);
   }
 };
@@ -31,9 +31,9 @@ boards.createBoard = async (req, res) => {
           name: req.body.name,
         });
     console.log("boards.createBoard:", newBoard);
-    res.status(201).json({ createdBoard: true, id: newBoard.dataValues.id });
+    res.sendStatus(201);
   } catch (e) {
-    console.log("createBoard: email not found", e);
+    console.log(e);
     res.sendStatus(500);
   }
 };
@@ -41,13 +41,10 @@ boards.createBoard = async (req, res) => {
 boards.deleteBoard = async (req, res) => {
   try {
     await db.boards.destroy({ where: { id: req.body.id }, raw: true });
-    res.status(201).json({ deletedBoard: true });
+    res.sendStatus(200);
   } catch (e) {
-    console.log("destroyBoard: id not found", e);
-    res.status(500).json({
-      error: true,
-      message: "Id this board not found",
-    });
+    console.log(e);
+    res.sendStatus(500);
   }
 };
 
