@@ -33,7 +33,7 @@ mail.confirmEmail = async ({ id, email }) => {
   }
 };
 
-mail.recoveryPassword = async ({ email, password }) => {
+mail.generateRecoveryLink = async (email, recoveryPasswordToken) => {
   try {
     await transporter.sendMail({
       from: '"toDoList" <felldektest@gmail.com>',
@@ -42,7 +42,8 @@ mail.recoveryPassword = async ({ email, password }) => {
       text: `
       A password recovery email has been sent for an account registered 
       to a current email address.
-      You password:  ${password}`,
+      To confirm the password change, follow the link:
+      ${process.env.FELLDEK_HOST}auth/recoveryPassword/link/${recoveryPasswordToken}`,
     });
   } catch (e) {
     console.log(e);

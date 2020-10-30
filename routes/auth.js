@@ -1,7 +1,12 @@
 const { mail } = require("./mail/mail");
+const jwt = require("jsonwebtoken");
 const db = require("../db/models");
 const bcrypt = require("bcryptjs");
-const { generateTokens } = require("./auth/token");
+const {
+  getTokensAuth,
+  getTokenRecoveryPassword,
+  recoveryPasswordTokenSecret,
+} = require("./auth/token");
 const hostToDoList = process.env.FELLDEK_HOST_TO_DO_LIST;
 let auth = {};
 
@@ -50,18 +55,47 @@ auth.confirmEmail = async (req, res) => {
 
 auth.recoveryPassword = async (req, res) => {
   try {
-    let recoveryPassword = await db.users.findOne({ where: { email: req.body.email } });
-    if (!recoveryPassword) {
+    console.log("in RECOVERY");
+    let token = req.params.token;
+    jwt.verify(token, recoveryPasswordTokenSecret, async (err, user) => {
+      if (err) {
+        if (err.name === "TokenExpiredError") {
+          console.log(__filename, "err TokenExpiredError:", err);
+          return res.sendStatus(403);
+        } else {
+          console.log(__filename, "err:", err);
+          return res.sendStatus(401);
+        }
+      }
+      const encryptedPassword = await encrypt(user.password);
+      await db.users.update({ password: encryptedPassword }, { where: { id: user.id } });
+    });
+  } catch (e) {
+    console.log("func confirmEmail", e);
+  }
+};
+
+auth.generateRecoveryLink = async (req, res) => {
+  try {    
+    let user = await db.users.findOne({
+      where: { email: req.body.email },
+      attributes: ["id", "confirm", "password"],
+    });
+    if (!user) {
       res.status(400).json({ message: "This email not found" });
       console.log("This email not found");
     } else {
-      if (recoveryPassword.dataValues.confirm === false) {
+      if (user.confirm === false) {
         res.status(400).json({
           message: "Please confirm your email address before proceeding",
         });
         console.log("Please confirm your email address before proceeding");
       } else {
-        let mailForgotPassword = await mail.recoveryPassword(recoveryPassword.dataValues);
+        const recoveryPasswordToken = getTokenRecoveryPassword({
+          id: user.id,
+          password: req.body.password,
+        });
+        await mail.generateRecoveryLink(req.body.email, recoveryPasswordToken);
         res.status(200).json({
           message: "A message with a password has been sent to you email",
         });
@@ -89,7 +123,7 @@ auth.signIn = async (req, res) => {
         message: "Incorrect username or password",
       });
     } else {
-      let tokens = generateTokens({ id: user.id });
+      const tokens = getTokensAuth({ id: user.id });
       console.log("users.signIn tokens:", tokens);
       res.status(200).json({
         message: "You are successfully logged in",
