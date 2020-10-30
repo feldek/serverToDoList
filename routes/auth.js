@@ -7,6 +7,7 @@ const {
   getTokenRecoveryPassword,
   recoveryPasswordTokenSecret,
 } = require("./auth/token");
+const { notification } = require("./notification");
 const hostToDoList = process.env.FELLDEK_HOST_TO_DO_LIST;
 let auth = {};
 
@@ -59,16 +60,31 @@ auth.recoveryPassword = async (req, res) => {
     let token = req.params.token;
     jwt.verify(token, recoveryPasswordTokenSecret, async (err, user) => {
       if (err) {
-        if (err.name === "TokenExpiredError") {
-          console.log(__filename, "err TokenExpiredError:", err);
-          return res.sendStatus(403);
-        } else {
-          console.log(__filename, "err:", err);
-          return res.sendStatus(401);
+        if (err.name === "TokenExpiredError") {          
+          req.query.status = false;
+          req.query.message = "Link expired";
+          req.query.description = "Please go through the password recovery procedure again";
+                  
+        } else {                    
+          req.query.status = false;
+          req.query.message = "Link invalid";          
         }
+        console.log(__filename, "err:", err);
+        notification(req, res);  
+        return
       }
       const encryptedPassword = await encrypt(user.password);
-      await db.users.update({ password: encryptedPassword }, { where: { id: user.id } });
+      const result =  await db.users.update({ password: encryptedPassword }, { where: { id: user.id } });
+      if(result){
+        req.query.status = true;
+        req.query.message = "Password changed successfully";
+      }else{
+        req.query.status = false;
+        req.query.message = "Something went wrong";
+        req.query.description = "Please go through the password recovery procedure a little later.";
+      }
+      notification(req, res); 
+      return
     });
   } catch (e) {
     console.log("func confirmEmail", e);
