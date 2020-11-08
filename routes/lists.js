@@ -56,6 +56,17 @@ lists.createList = async (req, res) => {
   }
 };
 
+lists.createLists = async (req, res) => {
+  try {
+    let newLists = await db.lists.bulkCreate(req.body.lists);
+    console.log("lists.createList:", newLists);
+    res.sendStatus(201);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+};
+
 lists.deleteList = async (req, res) => {
   try {
     await db.lists.destroy({ where: { id: req.body.id }, raw: true });

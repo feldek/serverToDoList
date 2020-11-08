@@ -1,10 +1,10 @@
 const jwt = require("jsonwebtoken");
 
-const tokenSecretAuth = process.env.FELLDEK_TOKEN_SECRET;
-const expiresInAuth = process.env.FELLDEK_TOKEN_LIFE;
+const tokenSecretAuth = process.env.TOKEN_SECRET;
+const expiresInAuth = process.env.TOKEN_LIFE;
 
-const refreshTokenSecretAuth = process.env.FELLDEK_REFRESH_TOKEN_SECRET;
-const refreshExpiresInAuth = process.env.FELLDEK_REFRESH_TOKEN_LIFE;
+const refreshTokenSecretAuth = process.env.REFRESH_TOKEN_SECRET;
+const refreshExpiresInAuth = process.env.REFRESH_TOKEN_LIFE;
 
 const recoveryPasswordTokenSecret = process.env.RECOVERY_PASSWORD_TOKEN_SECRET;
 module.exports.recoveryPasswordTokenSecret = recoveryPasswordTokenSecret
@@ -16,6 +16,15 @@ module.exports.generateToken = (targetObject, tokenSecret, expiresIn) => {
     expiresIn,
   });
   console.log(__filename, "NEW token:", token);
+
+  jwt.verify(token, recoveryPasswordTokenSecret, async (err, user) => {
+    console.log(user)
+    console.log(err)
+  })
+
+
+
+
   return token;
 };
 

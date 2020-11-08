@@ -1,41 +1,9 @@
-const username = process.env.FELLDEK_DB_CONFIG_USERNAME;
-const password = process.env.FELLDEK_DB_CONFIG_PASSWORD;
-const database = process.env.FELLDEK_DB_CONFIG_DATABASE;
-const host = process.env.FELLDEK_DB_CONFIG_HOST;
+const username = process.env.DB_CONFIG_USERNAME;
+const password = process.env.DB_CONFIG_PASSWORD;
+const database = process.env.DB_CONFIG_DATABASE;
+const host = process.env.DB_CONFIG_HOST;
 
-const development = {
-  username,
-  password,
-  database,
-  host,
-  dialect: "postgres",
-  port: "5432",
-  dialectOptions: {
-    ssl: {
-      rejectUnauthorized: false,
-    },
-    define: {
-      freezeTableName: true,
-    },
-  },
-};
-const test = {
-  username,
-  password,
-  database,
-  host,
-  dialect: "postgres",
-  port: "5432",
-  dialectOptions: {
-    ssl: {
-      rejectUnauthorized: false,
-    },
-    define: {
-      freezeTableName: true,
-    },
-  },
-};
-const production = {
+const development = production = {
   username,
   password,
   database,
@@ -52,4 +20,4 @@ const production = {
   },
 };
 
-module.exports = { development, test, production };
+module.exports = { development, production };

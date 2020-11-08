@@ -8,7 +8,6 @@ const {
   recoveryPasswordTokenSecret,
 } = require("./auth/token");
 const { notification } = require("./notification");
-const hostToDoList = process.env.FELLDEK_HOST_TO_DO_LIST;
 let auth = {};
 
 const encrypt = (target) => {
@@ -46,8 +45,18 @@ auth.signUp = async (req, res) => {
 
 auth.confirmEmail = async (req, res) => {
   try {
-    await db.users.update({ confirm: true }, { where: { id: req.params.id } });
-    res.redirect(hostToDoList);
+    const result = await db.users.update(
+      { confirm: true },
+      { where: { id: req.params.id } }
+    );
+    if (!result[0]) {
+      req.query.status = false;
+      req.query.message = "Something went wrong";
+    } else {
+      req.query.status = true;
+      req.query.message = "The operation was successful, your mail has been confirmed.";
+    }
+    notification(req, res);        
   } catch (e) {
     console.log("func confirmEmail", e);
     res.sendStatus(500);
@@ -60,31 +69,35 @@ auth.recoveryPassword = async (req, res) => {
     let token = req.params.token;
     jwt.verify(token, recoveryPasswordTokenSecret, async (err, user) => {
       if (err) {
-        if (err.name === "TokenExpiredError") {          
+        if (err.name === "TokenExpiredError") {
           req.query.status = false;
           req.query.message = "Link expired";
-          req.query.description = "Please go through the password recovery procedure again";
-                  
-        } else {                    
+          req.query.description =
+            "Please go through the password recovery procedure again";
+        } else {
           req.query.status = false;
-          req.query.message = "Link invalid";          
+          req.query.message = "Link invalid";
         }
         console.log(__filename, "err:", err);
-        notification(req, res);  
-        return
+        notification(req, res);
+        return;
       }
       const encryptedPassword = await encrypt(user.password);
-      const result =  await db.users.update({ password: encryptedPassword }, { where: { id: user.id } });
-      if(result){
+      const result = await db.users.update(
+        { password: encryptedPassword },
+        { where: { id: user.id } }
+      );
+      if (result) {
         req.query.status = true;
         req.query.message = "Password changed successfully";
-      }else{
+      } else {
         req.query.status = false;
         req.query.message = "Something went wrong";
-        req.query.description = "Please go through the password recovery procedure a little later.";
+        req.query.description =
+          "Please go through the password recovery procedure a little later.";
       }
-      notification(req, res); 
-      return
+      notification(req, res);
+      return;
     });
   } catch (e) {
     console.log("func confirmEmail", e);
@@ -92,7 +105,7 @@ auth.recoveryPassword = async (req, res) => {
 };
 
 auth.generateRecoveryLink = async (req, res) => {
-  try {    
+  try {
     let user = await db.users.findOne({
       where: { email: req.body.email },
       attributes: ["id", "confirm", "password"],

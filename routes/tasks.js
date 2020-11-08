@@ -45,11 +45,24 @@ tasks.getCurrentTasks = async (req, res) => {
 
 tasks.createTask = async (req, res) => {
   try {
-    await db.tasks.create({
+    let newTask =  await db.tasks.create({
       name: req.body.name,
       listId: req.body.listId,
       order: req.body.order,
+      id: req.body.id,
     });
+    console.log("tasks.createTasks:", newTask);
+    res.sendStatus(201);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+};
+
+tasks.createTasks = async (req, res) => {
+  try {
+    let newTasks = await db.tasks.bulkCreate(req.body.tasks);
+    console.log("tasks.createTasks:", newTasks);
     res.sendStatus(201);
   } catch (e) {
     console.log(e);

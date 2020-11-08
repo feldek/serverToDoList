@@ -22,11 +22,13 @@ router.delete("/board", authMiddleware, boards.deleteBoard);
 router.get("/lists/getAllLists", authMiddleware, lists.getAllLists);
 router.get("/lists", authMiddleware, lists.getCurrentLists);
 router.post("/list", authMiddleware, lists.createList);
+router.post("/lists", authMiddleware, lists.createLists);
 router.delete("/list", authMiddleware, lists.deleteList);
 
 router.get("/tasks/getAllTasks", authMiddleware, tasks.getAllTasks);
 router.get("/tasks", authMiddleware, tasks.getCurrentTasks);
 router.post("/task", authMiddleware, tasks.createTask);
+router.post("/tasks", authMiddleware, tasks.createTasks);
 router.patch("/task", authMiddleware, tasks.updateTask);
 router.delete("/task", authMiddleware, tasks.deleteTask);
 
