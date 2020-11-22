@@ -6,6 +6,9 @@ const {
   getTokensAuth,
   getTokenRecoveryPassword,
   recoveryPasswordTokenSecret,
+  generateToken,
+  tokenSecretAuth,
+  expiresInAuth,
 } = require("./auth/token");
 const { notification } = require("./notification");
 let auth = {};
@@ -29,7 +32,12 @@ auth.signUp = async (req, res) => {
 
     console.log("user:", user);
     await auth.signIn(req, res);
-    await mail.confirmEmail({ id: user.id, email: user.email });
+    const confirmEmailToken = generateToken(
+      { id: user.id },
+      tokenSecretAuth,
+      expiresInAuth
+    );
+    await mail.sendLinkConfirmEmail({ confirmEmailToken, email: user.email });
   } catch (e) {
     console.log("func signUp", e);
     if (e.original.code === "23505") {
@@ -45,21 +53,31 @@ auth.signUp = async (req, res) => {
 
 auth.confirmEmail = async (req, res) => {
   try {
-    const result = await db.users.update(
-      { confirm: true },
-      { where: { id: req.params.id } }
-    );
-    if (!result[0]) {
-      req.query.status = false;
-      req.query.message = "Something went wrong";
-    } else {
-      req.query.status = true;
-      req.query.message = "The operation was successful, your mail has been confirmed.";
-    }
-    notification(req, res);        
+    jwt.verify(req.params.confirmToken, tokenSecretAuth, async (err, user) => {
+      console.log(__filename, "user:", user);
+
+      if (err) {
+        req.query.status = false;
+        req.query.message = "Something went wrong";
+        notification(req, res);
+        return;
+      }
+      const result = await db.users.update({ confirm: true }, { where: { id: user.id } });
+
+      if (!result[0]) {
+        req.query.status = false;
+        req.query.message = "Something went wrong";
+      } else {
+        req.query.status = true;
+        req.query.message = "The operation was successful, your mail has been confirmed.";
+      }
+      notification(req, res);
+    });
   } catch (e) {
     console.log("func confirmEmail", e);
-    res.sendStatus(500);
+    req.query.status = false;
+    req.query.message = "Something went wrong";
+    notification(req, res);
   }
 };
 

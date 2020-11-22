@@ -1,13 +1,12 @@
 const jwt = require("jsonwebtoken");
 
-const tokenSecretAuth = process.env.TOKEN_SECRET;
-const expiresInAuth = process.env.TOKEN_LIFE;
+module.exports.tokenSecretAuth = process.env.TOKEN_SECRET;
+module.exports.expiresInAuth = process.env.TOKEN_LIFE;
 
 const refreshTokenSecretAuth = process.env.REFRESH_TOKEN_SECRET;
 const refreshExpiresInAuth = process.env.REFRESH_TOKEN_LIFE;
 
-const recoveryPasswordTokenSecret = process.env.RECOVERY_PASSWORD_TOKEN_SECRET;
-module.exports.recoveryPasswordTokenSecret = recoveryPasswordTokenSecret
+module.exports.recoveryPasswordTokenSecret = process.env.RECOVERY_PASSWORD_TOKEN_SECRET;
 const recoveryPasswordExpiresIn = process.env.RECOVERY_PASSWORD_TOKEN_LIFE;
 
 module.exports.generateToken = (targetObject, tokenSecret, expiresIn) => {
@@ -16,31 +15,28 @@ module.exports.generateToken = (targetObject, tokenSecret, expiresIn) => {
     expiresIn,
   });
   console.log(__filename, "NEW token:", token);
-
-  jwt.verify(token, recoveryPasswordTokenSecret, async (err, user) => {
-    console.log(user)
-    console.log(err)
-  })
-
-
-
-
   return token;
 };
 
-
 module.exports.getTokensAuth = (targetObject) => {
   const tokensAuth = {
-    token: this.generateToken(targetObject, tokenSecretAuth, expiresInAuth),
-    refreshToken: this.generateToken(targetObject, refreshTokenSecretAuth, refreshExpiresInAuth)
+    token: this.generateToken(targetObject, this.tokenSecretAuth, this.expiresInAuth),
+    refreshToken: this.generateToken(
+      targetObject,
+      refreshTokenSecretAuth,
+      refreshExpiresInAuth
+    ),
   };
   return tokensAuth;
 };
 
-module.exports.getTokenRecoveryPassword = (targetObject) => {  
-  return this.generateToken(targetObject, recoveryPasswordTokenSecret, recoveryPasswordExpiresIn);
+module.exports.getTokenRecoveryPassword = (targetObject) => {
+  return this.generateToken(
+    targetObject,
+    this.recoveryPasswordTokenSecret,
+    recoveryPasswordExpiresIn
+  );
 };
-
 
 module.exports.refreshTokensAuth = (req, res) => {
   const header = req.headers;

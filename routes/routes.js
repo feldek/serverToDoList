@@ -13,7 +13,7 @@ router.post("/auth/recoveryPassword", auth.generateRecoveryLink);
 router.get("/auth/recoveryPassword/link/:token", auth.recoveryPassword);
 router.post("/auth/changePassword", authMiddleware, auth.changePassword);
 router.post("/auth/refreshTokensAuth", refreshTokensAuth);
-router.get("/auth/confirmEmail/:id", auth.confirmEmail);
+router.get("/auth/confirmEmail/:confirmToken", auth.confirmEmail);
 
 router.get("/boards", authMiddleware, boards.getBoards);
 router.post("/board", authMiddleware, boards.createBoard);

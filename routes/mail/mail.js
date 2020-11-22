@@ -12,9 +12,9 @@ let transporter = nodemailer.createTransport({
   },
 });
 
-mail.confirmEmail = async ({ id, email }) => {
+mail.sendLinkConfirmEmail = async ({ confirmEmailToken, email }) => {
   try {
-    console.log("CONFIRM EMAIL id:", id);
+    console.log("CONFIRM EMAIL id:", confirmEmailToken);
     await transporter.sendMail({
       from: `"Sersice toDoList" <${process.env.EMAIL}>`,
       to: `${email}`,
@@ -27,7 +27,7 @@ mail.confirmEmail = async ({ id, email }) => {
       
       For security reasons, please confirm your email address before proceeding.
 
-      ${process.env.HOST}auth/confirmEmail/${id}`,
+      ${process.env.HOST}auth/confirmEmail/${confirmEmailToken}`,
     });
   } catch (e) {
     console.log(e);
