@@ -1,24 +1,33 @@
 const express = require("express");
 const dotenv = require("dotenv");
 dotenv.config();
+const http = require("http");
 const routes = require("./routes/routes");
-const PORT = process.env.PORT || 3004;
+const port = process.env.PORT || 3004;
 const app = express();
-
-app.listen(PORT, () => {
-  console.log("Server has been started...");
-});
 
 app.use(express.urlencoded());
 app.use(express.json());
-app.use((req, res, next) => {
-  res.append("Access-Control-Allow-Origin", ["*"]);
-  res.append("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,PATCH");
-  res.append(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization,X-Custom-Header"
-  );
-  next();
-});
 
-app.use("/", routes);
+const cors = require("cors");
+const corsOptions = {
+  origin: "*",
+  methods: ["GET", "POST", " POST", "DELETE", "PATCH"],
+  allowedHeaders: "Content-Type, Authorization,X-Custom-Header",
+  credentials: true,
+};
+app.use(cors(corsOptions));
+app.use(routes);
+
+const server = http.createServer(app);
+server.listen(port, () => console.log(`Listening on port ${port}`));
+
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["my-custom-header"],
+    credentials: true,
+  },
+});
+require("./routes/chat/chat.js")(io);
