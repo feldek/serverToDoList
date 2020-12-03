@@ -19,18 +19,13 @@ router.get("/boards", authMiddleware, boards.getBoards);
 router.post("/board", authMiddleware, boards.createBoard);
 router.delete("/board", authMiddleware, boards.deleteBoard);
 
-router.get("/lists/getAllLists", authMiddleware, lists.getAllLists);
-router.get("/lists", authMiddleware, lists.getCurrentLists);
-router.post("/list", authMiddleware, lists.createList);
+router.get("/lists", authMiddleware, lists.getLists);
 router.post("/lists", authMiddleware, lists.createLists);
 router.delete("/list", authMiddleware, lists.deleteList);
 
-router.get("/tasks/getAllTasks", authMiddleware, tasks.getAllTasks);
-router.get("/tasks", authMiddleware, tasks.getCurrentTasks);
-router.post("/task", authMiddleware, tasks.createTask);
+router.get("/tasks", authMiddleware, tasks.getTasks);
 router.post("/tasks", authMiddleware, tasks.createTasks);
 router.patch("/task", authMiddleware, tasks.updateTask);
 router.delete("/task", authMiddleware, tasks.deleteTask);
 
-router.patch("/task/description", authMiddleware, tasks.updateDescription);
 module.exports = router;

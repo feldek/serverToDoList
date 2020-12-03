@@ -2,57 +2,29 @@ const db = require("../db/models");
 
 let lists = {};
 
-lists.getAllLists = async (req, res) => {
+lists.getLists = async (req, res) => {
   try {
-    let allLists = await db.lists.findAll({
-      include: {
-        model: db.boards,
-        where: { userId: req.user.id },
-        attributes: [],
-      },
+    if (req.query.boardId) {
+      var search = { where: { boardId: req.query.boardId } };
+    } else {
+      var search = {
+        include: {
+          attributes: [],
+          model: db.boards,
+          where: { userId: req.user.id },
+        },
+      };
+    }
+    let lists = await db.lists.findAll({
+      ...search,
       raw: true,
       attributes: ["name", "id", "boardId"],
     });
-    console.log("lists.getAllLists:", allLists);
-    res.status(200).json(allLists);
+    console.log("lists.getLists:", lists);
+    res.status(200).json(lists);
   } catch (e) {
     console.log(e);
-    res.sendStatus(500);
-  }
-};
-
-lists.getCurrentLists = async (req, res) => {
-  try {
-    let currentList = await db.lists.findAll({
-      where: { boardId: req.query.boardId },
-      attributes: ["name", "id", "boardId"],
-      raw: true,
-    });
-    console.log("lists.getCurrentLists:", currentList);
-    res.status(200).json(currentList);
-  } catch (e) {
-    console.log(e);
-    res.sendStatus(500);
-  }
-};
-
-lists.createList = async (req, res) => {
-  try {
-    let newList = req.body.id
-      ? await db.lists.create({
-          boardId: req.body.boardId,
-          name: req.body.name,
-          id: req.body.id,
-        })
-      : await db.lists.create({
-          boardId: req.body.boardId,
-          name: req.body.name,
-        });
-    console.log("lists.createList:", newList);
-    res.sendStatus(201);
-  } catch (e) {
-    console.log(e);
-    res.sendStatus(500);
+    res.status(500).json({});
   }
 };
 
@@ -60,20 +32,20 @@ lists.createLists = async (req, res) => {
   try {
     let newLists = await db.lists.bulkCreate(req.body.lists);
     console.log("lists.createList:", newLists);
-    res.sendStatus(201);
+    res.status(201).json({});
   } catch (e) {
     console.log(e);
-    res.sendStatus(500);
+    res.status(500).json({});
   }
 };
 
 lists.deleteList = async (req, res) => {
   try {
     await db.lists.destroy({ where: { id: req.body.id }, raw: true });
-    res.sendStatus(200);
+    res.status(200).json({});
   } catch (e) {
     console.log(e);
-    res.sendStatus(500);
+    res.status(500).json({});
   }
 };
 

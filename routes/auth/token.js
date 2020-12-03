@@ -1,15 +1,15 @@
 const jwt = require("jsonwebtoken");
 
-module.exports.tokenSecretAuth = process.env.TOKEN_SECRET;
-module.exports.expiresInAuth = process.env.TOKEN_LIFE;
+const tokenSecretAuth = process.env.TOKEN_SECRET;
+const expiresInAuth = process.env.TOKEN_LIFE;
 
 const refreshTokenSecretAuth = process.env.REFRESH_TOKEN_SECRET;
 const refreshExpiresInAuth = process.env.REFRESH_TOKEN_LIFE;
 
-module.exports.recoveryPasswordTokenSecret = process.env.RECOVERY_PASSWORD_TOKEN_SECRET;
+const recoveryPasswordTokenSecret = process.env.RECOVERY_PASSWORD_TOKEN_SECRET;
 const recoveryPasswordExpiresIn = process.env.RECOVERY_PASSWORD_TOKEN_LIFE;
 
-module.exports.generateToken = (targetObject, tokenSecret, expiresIn) => {
+const generateToken = (targetObject, tokenSecret, expiresIn) => {
   console.log(__filename, "targetObject:", targetObject);
   const token = jwt.sign(targetObject, tokenSecret, {
     expiresIn,
@@ -18,10 +18,10 @@ module.exports.generateToken = (targetObject, tokenSecret, expiresIn) => {
   return token;
 };
 
-module.exports.getTokensAuth = (targetObject) => {
+const getTokensAuth = (targetObject) => {
   const tokensAuth = {
-    token: this.generateToken(targetObject, this.tokenSecretAuth, this.expiresInAuth),
-    refreshToken: this.generateToken(
+    token: generateToken(targetObject, tokenSecretAuth, expiresInAuth),
+    refreshToken: generateToken(
       targetObject,
       refreshTokenSecretAuth,
       refreshExpiresInAuth
@@ -30,28 +30,50 @@ module.exports.getTokensAuth = (targetObject) => {
   return tokensAuth;
 };
 
-module.exports.getTokenRecoveryPassword = (targetObject) => {
-  return this.generateToken(
+const getTokenRecoveryPassword = (targetObject) => {
+  return generateToken(
     targetObject,
-    this.recoveryPasswordTokenSecret,
+    recoveryPasswordTokenSecret,
     recoveryPasswordExpiresIn
   );
 };
 
-module.exports.refreshTokensAuth = (req, res) => {
-  const header = req.headers;
-  let refreshToken = header.authorization && header.authorization.split(" ")[1];
-  let newTokens;
-  console.log(__filename, "refreshToken:", refreshToken);
-  if (!refreshToken) return res.sendStatus(401);
-  jwt.verify(refreshToken, refreshTokenSecretAuth, async (err, user) => {
-    console.log(__filename, "user:", user);
-    if (!err) {
-      newTokens = this.getTokensAuth({ id: user.id });
-      res.status(200).json(newTokens);
-    } else {
-      console.log(__filename, "err :", err);
-      return res.sendStatus(401);
+const refreshTokensAuth = async (req, res) => {
+  try {
+    const header = req.headers;
+    let refreshToken = header.authorization && header.authorization.split(" ")[1];
+    console.log(__filename, "refreshToken:", refreshToken);
+    if (!refreshToken) {
+      return res.status(401).json({});
     }
+    const user = await jwtVerify(refreshToken, refreshTokenSecretAuth);
+    console.log(__filename, "user:", user);
+    let newTokens = getTokensAuth({ id: user.id });
+    res.status(200).json(newTokens);
+  } catch (err) {
+    console.log(err);
+    res.status(401).json({});
+  }
+};
+
+const jwtVerify = (token, tokenSecret) => {
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, tokenSecret, async (err, data) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve(data);
+    });
   });
+};
+
+module.exports = {
+  tokenSecretAuth,
+  expiresInAuth,
+  recoveryPasswordTokenSecret,
+  generateToken,
+  getTokensAuth,
+  getTokenRecoveryPassword,
+  refreshTokensAuth,
+  jwtVerify,
 };

@@ -1,24 +1,25 @@
-const jwt = require("jsonwebtoken");
+const { jwtVerify } = require("./token");
 const tokenSecret = process.env.TOKEN_SECRET;
 
-module.exports = function authenticateToken(req, res, next) {
+const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers;
-  const token = authHeader.authorization && authHeader.authorization.split(" ")[1];  
+  const token = authHeader.authorization && authHeader.authorization.split(" ")[1];
 
-  if (token == null) return res.sendStatus(401);
-
-  jwt.verify(token, tokenSecret, async (err, user) => {
-    console.log(__filename, "user:", user);
-    if (err) {
-      if (err.name === "TokenExpiredError") {
-        console.log(__filename, "err TokenExpiredError:", err);
-        return res.sendStatus(403);
-      } else {
-        console.log(__filename, "err:", err);
-        return res.sendStatus(401);
-      }
-    }
+  if (token == null) {
+    res.status(401).json({});
+  }
+  try {
+    const user = await jwtVerify(token, tokenSecret);
     req.user = user;
     next();
-  });
+  } catch (err) {
+    console.log(err);
+    if (err.name === "TokenExpiredError") {
+      res.status(403).json({});
+    } else {
+      res.status(401).json({});
+    }
+  }
 };
+
+module.exports = authenticateToken;

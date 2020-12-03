@@ -14,37 +14,33 @@ boards.getBoards = async (req, res) => {
     res.status(201).json(currentBoards);
   } catch (e) {
     console.log(e);
-    res.sendStatus(500);
+    res.status(500).json({});    
   }
 };
 
 boards.createBoard = async (req, res) => {
   try {
-    let newBoard = req.body.id
-      ? await db.boards.create({
-          userId: req.user.id,
-          name: req.body.name,
-          id: req.body.id,
-        })
-      : await db.boards.create({
-          userId: req.user.id,
-          name: req.body.name,
-        });
+    const newBoard = await db.boards.create({
+      userId: req.user.id,
+      name: req.body.name,
+      id: req.body.id,
+    });
+    
     console.log("boards.createBoard:", newBoard);
-    res.sendStatus(201);
+    res.status(201).json({});    
   } catch (e) {
     console.log(e);
-    res.sendStatus(500);
+    res.status(500).json({});    
   }
 };
 
 boards.deleteBoard = async (req, res) => {
   try {
     await db.boards.destroy({ where: { id: req.body.id }, raw: true });
-    res.sendStatus(200);
+    res.status(200).json({});
   } catch (e) {
     console.log(e);
-    res.sendStatus(500);
+    res.status(500).json({});
   }
 };
 

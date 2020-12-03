@@ -1,4 +1,3 @@
-const db = require("../../db/models");
 const nodemailer = require("nodemailer");
 let mail = {};
 
@@ -31,7 +30,7 @@ mail.sendLinkConfirmEmail = async ({ confirmEmailToken, email }) => {
     });
   } catch (e) {
     console.log(e);
-    res.sendStatus(500);
+    res.status(500).json({});
   }
 };
 
@@ -49,7 +48,7 @@ mail.generateRecoveryLink = async (email, recoveryPasswordToken) => {
     });
   } catch (e) {
     console.log(e);
-    res.sendStatus(500);
+    res.status(500).json({});
   }
 };
 

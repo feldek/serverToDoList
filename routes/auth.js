@@ -1,5 +1,4 @@
-const { mail } = require("./mail/mail");
-const jwt = require("jsonwebtoken");
+const { mail } = require("../report/mail");
 const db = require("../db/models");
 const bcrypt = require("bcryptjs");
 const {
@@ -9,11 +8,12 @@ const {
   generateToken,
   tokenSecretAuth,
   expiresInAuth,
+  jwtVerify,
 } = require("./auth/token");
-const { notification } = require("./notification");
+const { notification } = require("../report/notification");
 let auth = {};
 
-const encrypt = (target) => {
+const bcryptVerify = (target) => {
   return new Promise((resolve, reject) => {
     bcrypt.hash(target, 8, (err, hash) => {
       if (err) return reject(err);
@@ -24,7 +24,7 @@ const encrypt = (target) => {
 
 auth.signUp = async (req, res) => {
   try {
-    const encryptedPassword = await encrypt(req.body.password);
+    const encryptedPassword = await bcryptVerify(req.body.password);
     const user = await db.users.create({
       email: req.body.email,
       password: encryptedPassword,
@@ -46,79 +46,64 @@ auth.signUp = async (req, res) => {
       });
       console.log("This E-mail already registered");
     } else {
-      res.sendStatus(500);
+      res.status(500).json({});
     }
   }
 };
 
 auth.confirmEmail = async (req, res) => {
   try {
-    jwt.verify(req.params.confirmToken, tokenSecretAuth, async (err, user) => {
-      console.log(__filename, "user:", user);
-
-      if (err) {
-        req.query.status = false;
-        req.query.message = "Something went wrong";
-        notification(req, res);
-        return;
-      }
-      const result = await db.users.update({ confirm: true }, { where: { id: user.id } });
-
-      if (!result[0]) {
-        req.query.status = false;
-        req.query.message = "Something went wrong";
-      } else {
-        req.query.status = true;
-        req.query.message = "The operation was successful, your mail has been confirmed.";
-      }
-      notification(req, res);
-    });
-  } catch (e) {
-    console.log("func confirmEmail", e);
-    req.query.status = false;
-    req.query.message = "Something went wrong";
-    notification(req, res);
+    const user = await jwtVerify(req.params.confirmToken, tokenSecretAuth);
+    console.log(__filename, "user:", user);
+    const result = await db.users.update({ confirm: true }, { where: { id: user.id } });
+    let status, message;
+    if (!result[0]) {
+      status = false;
+      message = "Something went wrong";
+    } else {
+      status = true;
+      message = "The operation was successful, your mail has been confirmed.";
+    }
+    notification(res, { status, message });
+  } catch (err) {
+    console.log("func confirmEmail", err);
+    if (err.name === "TokenExpiredError") {
+      notification(res, { status: false, message: "Link expired" });
+    } else {
+      notification(res, { status: false, message: "Something went wrong" });
+    }
   }
 };
 
 auth.recoveryPassword = async (req, res) => {
+  let status = (message = description = "");
   try {
-    console.log("in RECOVERY");
-    let token = req.params.token;
-    jwt.verify(token, recoveryPasswordTokenSecret, async (err, user) => {
-      if (err) {
-        if (err.name === "TokenExpiredError") {
-          req.query.status = false;
-          req.query.message = "Link expired";
-          req.query.description =
-            "Please go through the password recovery procedure again";
-        } else {
-          req.query.status = false;
-          req.query.message = "Link invalid";
-        }
-        console.log(__filename, "err:", err);
-        notification(req, res);
-        return;
-      }
-      const encryptedPassword = await encrypt(user.password);
-      const result = await db.users.update(
-        { password: encryptedPassword },
-        { where: { id: user.id } }
-      );
-      if (result) {
-        req.query.status = true;
-        req.query.message = "Password changed successfully";
-      } else {
-        req.query.status = false;
-        req.query.message = "Something went wrong";
-        req.query.description =
-          "Please go through the password recovery procedure a little later.";
-      }
-      notification(req, res);
-      return;
-    });
-  } catch (e) {
-    console.log("func confirmEmail", e);
+    const user = await jwtVerify(req.params.token, recoveryPasswordTokenSecret);
+    const encryptedPassword = await bcryptVerify(user.password);
+    const result = await db.users.update(
+      { password: encryptedPassword },
+      { where: { id: user.id } }
+    );
+    if (result) {
+      status = true;
+      message = "Password changed successfully";
+    } else {
+      status = false;
+      message = "Something went wrong";
+      description = "Please go through the password recovery procedure a little later.";
+    }
+    notification(res, { status, message, description });
+  } catch (err) {
+    console.log(__filename, "err:", err);
+    if (err.name === "TokenExpiredError") {
+      status = false;
+      message = "Link expired";
+      description = "Please go through the password recovery procedure again";
+    } else {
+      status = false;
+      message = "Link invalid";
+    }
+    notification(res, { status, message, description });
   }
 };
 
@@ -151,7 +136,7 @@ auth.generateRecoveryLink = async (req, res) => {
     }
   } catch (e) {
     console.log(e);
-    res.sendStatus(500);
+    res.status(500).json({});
   }
 };
 
@@ -179,7 +164,7 @@ auth.signIn = async (req, res) => {
     }
   } catch (e) {
     console.log("func signIn", e);
-    res.sendStatus(500);
+    res.status(500).json({});
   }
 };
 
@@ -192,7 +177,7 @@ auth.changePassword = async (req, res) => {
     });
     let verification = await bcrypt.compare(req.body.oldPassword, user.password);
     if (verification) {
-      const encryptedPassword = await encrypt(req.body.newPassword);
+      const encryptedPassword = await bcryptVerify(req.body.newPassword);
       await db.users.update(
         { password: encryptedPassword },
         { where: { id: req.user.id } }
@@ -206,7 +191,7 @@ auth.changePassword = async (req, res) => {
       });
     }
   } catch (e) {
-    res.sendStatus(500);
+    res.status(500).json({});
     console.log("func changePassword", e);
   }
 };

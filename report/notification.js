@@ -1,14 +1,14 @@
-module.exports.notification = async (req, res) => {
+module.exports.notification = async (
+  res,
+  { status = false, message = "", description = "" }
+) => {
   try {
-    let message = req.query.message || "";
-    let description = req.query.description || "";    
-
-    if (req.query.status) {
-      var status = "The operation was successful";
-      var colorStatus = "#690";
+    if (status) {
+      var header = "The operation was successful";
+      var colorHeader = "#690";
     } else {
-      var status = "ERROR";
-      var colorStatus = "#fb3e44";
+      var header = "ERROR";
+      var colorHeader = "#fb3e44";
     }
 
     let backgroundStyle = ` 
@@ -38,8 +38,8 @@ module.exports.notification = async (req, res) => {
       box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
       border-radius: 2px;
     `;
-    let statusStyle = `
-      color: ${colorStatus};
+    let headerStyle = `
+      color: ${colorHeader};
       font-size: 22px;
       padding: 10px;
     `;
@@ -56,8 +56,8 @@ module.exports.notification = async (req, res) => {
     let html = `
     <div style = '${backgroundStyle}'>
       <div style = '${backgrounNotificationStyle}'>
-        <div style = '${statusStyle}'>
-          ${status}
+        <div style = '${headerStyle}'>
+          ${header}
           </div>
         <div style = '${messageStyle}'>
           ${message}
@@ -70,6 +70,7 @@ module.exports.notification = async (req, res) => {
     `;
     res.send(html);
   } catch (e) {
-    res.sendStatus(500);
+    console.log(e);
+    res.status(500).json({});
   }
 };
