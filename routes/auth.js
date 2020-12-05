@@ -6,8 +6,7 @@ const {
   getTokenRecoveryPassword,
   recoveryPasswordTokenSecret,
   generateToken,
-  tokenSecretAuth,
-  expiresInAuth,
+  tokenSecretAuth,  
   jwtVerify,
 } = require("./auth/token");
 const { notification } = require("../report/notification");
@@ -32,11 +31,7 @@ auth.signUp = async (req, res) => {
 
     console.log("user:", user);
     await auth.signIn(req, res);
-    const confirmEmailToken = generateToken(
-      { id: user.id },
-      tokenSecretAuth,
-      expiresInAuth
-    );
+    const confirmEmailToken = generateToken({ id: user.id }, tokenSecretAuth);
     await mail.sendLinkConfirmEmail({ confirmEmailToken, email: user.email });
   } catch (e) {
     console.log("func signUp", e);

@@ -10,10 +10,12 @@ const recoveryPasswordTokenSecret = process.env.RECOVERY_PASSWORD_TOKEN_SECRET;
 const recoveryPasswordExpiresIn = process.env.RECOVERY_PASSWORD_TOKEN_LIFE;
 
 const generateToken = (targetObject, tokenSecret, expiresIn) => {
+  let paramsExpiresIn = {};
+  if (expiresIn) {
+    paramsExpiresIn = { expiresIn };
+  }
   console.log(__filename, "targetObject:", targetObject);
-  const token = jwt.sign(targetObject, tokenSecret, {
-    expiresIn,
-  });
+  const token = jwt.sign(targetObject, tokenSecret, paramsExpiresIn);
   console.log(__filename, "NEW token:", token);
   return token;
 };

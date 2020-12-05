@@ -4,10 +4,10 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     return queryInterface.createTable("boards", {
       id: {
+        primaryKey: true,
         type: Sequelize.DataTypes.UUID,
         defaultValue: Sequelize.literal("uuid_generate_v4()"),
         allowNull: false,
-        primaryKey: true,
       },
       name: { type: Sequelize.DataTypes.STRING, allowNull: false },
       userId: {
