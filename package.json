@@ -3,25 +3,22 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "dependencies": {
-    "dotenv": "^8.2.0",
-    "jsonwebtoken": "^8.5.1",
-    "rand-token": "^1.0.1",
-    "sequelize": "^6.3.5",
-    "sequelize-cli": "^6.2.0"
-  },
-  "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/feldek/serverToDoList.git"
+    "start": "node index",
+    "dev": "nodemon index"
   },
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/feldek/serverToDoList/issues"
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "nodemailer": "^6.4.13",
+    "pg": "^8.4.0",
+    "sequelize": "^6.3.5"
   },
-  "homepage": "https://github.com/feldek/serverToDoList#readme"
+  "devDependencies": {
+    "sequelize-cli": "^6.2.0"
+  }
 }
