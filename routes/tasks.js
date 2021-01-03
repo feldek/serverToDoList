@@ -60,7 +60,7 @@ tasks.updateTask = async (req, res) => {
   }
 };
 tasks.deleteTask = async (req, res) => {
-  try {
+  try { 
     await db.tasks.destroy({ where: { id: req.body.id }, raw: true });
     res.status(200).json({});
   } catch (e) {

@@ -3,6 +3,7 @@ const auth = require("./auth");
 const boards = require("./boards");
 const lists = require("./lists");
 const tasks = require("./tasks");
+const geoPlugin = require("./api/geoplugin");
 const router = express.Router();
 const authMiddleware = require("./auth/authMiddleware");
 const { refreshTokensAuth } = require("./auth/token");
@@ -27,5 +28,7 @@ router.get("/tasks", authMiddleware, tasks.getTasks);
 router.post("/tasks", authMiddleware, tasks.createTasks);
 router.patch("/task", authMiddleware, tasks.updateTask);
 router.delete("/task", authMiddleware, tasks.deleteTask);
+
+router.get("/geoplugin", authMiddleware, geoPlugin);
 
 module.exports = router;

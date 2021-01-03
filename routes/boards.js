@@ -14,7 +14,7 @@ boards.getBoards = async (req, res) => {
     res.status(201).json(currentBoards);
   } catch (e) {
     console.log(e);
-    res.status(500).json({});    
+    res.status(500).json({});
   }
 };
 
@@ -25,12 +25,12 @@ boards.createBoard = async (req, res) => {
       name: req.body.name,
       id: req.body.id,
     });
-    
+
     console.log("boards.createBoard:", newBoard);
-    res.status(201).json({});    
+    res.status(201).json({});
   } catch (e) {
     console.log(e);
-    res.status(500).json({});    
+    res.status(500).json({});
   }
 };
 
