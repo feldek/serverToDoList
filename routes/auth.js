@@ -30,7 +30,7 @@ auth.signUp = async (req, res) => {
     });
 
     console.log("user:", user);
-    await auth.signIn(req, res);
+    await auth.signIn(req, res);    
     const confirmEmailToken = generateToken({ id: user.id }, tokenSecretAuth);
     await mail.sendLinkConfirmEmail({ confirmEmailToken, email: user.email });
   } catch (e) {
